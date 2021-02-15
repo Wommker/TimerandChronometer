@@ -1,242 +1,240 @@
+"""
+Created : 15:02:2021
+
+@author: Woomker
+"""
+
 from tkinter import *
-from math import floor
+from tkinter.font import Font
 import pygame
 
-#Increase the hours with the button
+#Control variables
 
-def Mohours(incordec):
-    global run
-    if(run == False):
-        if(incordec):
-            if(int(tempo[0]) > 0):
-                tempo[0] = (str(int(tempo[0]) - 1))
-            update(True)
-        else:
-            tempo[0] = (str(int(tempo[0]) + 1))
-            update(False)
+run = False 
+toc = False
 
-#Increase the minutes with the button
+#Class Interface where everything happens
 
-def Mominutes(incordec):
-    global run
-    if(run == False):
-        if(incordec):
-            if(int(tempo[1]) > 0 ):
-                tempo[1] = (str(int(tempo[1]) - 1))
-            elif(int(tempo[0]) > 0):
-                tempo[0] = (str(int(tempo[0]) - 1))
-                tempo[1] = (str(59))
-            update(True)
-        else:
-            tempo[1] = (str(int(tempo[1]) + 1))
-            update(False)
+class interface:
 
-#Increase the seconds with the button
+    #Start stopwatch or timer as the case may be
 
-def Moseconds(incordec):
-    global run
-    if(run == False):
-        if(incordec):
-            if(int(tempo[2]) > 0 ):
-                tempo[2] = (str(int(tempo[2]) - 1))
-            elif(int(tempo[1]) > 0):
-                tempo[1] = (str(int(tempo[1]) - 1))
-                tempo[2] = (str(59))
-            elif(int(tempo[0]) > 0):
-                tempo[0] = (str(int(tempo[0]) - 1))
-                tempo[1] = (str(59))
-                tempo[2] = (str(59))
-            update(True)            
-        else:
-            tempo[2] = (str(int(tempo[2]) + 1))
-            update(False)
-
-#Update and show time bar and error prevention
-def update(incordec):            
-    if(incordec):
-        pass
-    else:
-            #Seconds
-        if((int(tempo[2])) >= 60):
-            tempo[1] = str(int(tempo[1]) + floor(int(tempo[2])/60))
-            tempo[2] = str(int(tempo[2]) - (floor(int(tempo[2])/60)*60))
-            #Minutes
-        if((int(tempo[1])) >= 60):
-            tempo[0] = str(int(tempo[0]) + floor(int(tempo[1])/60))
-            tempo[1] = str(int(tempo[1]) - (floor(int(tempo[1])/60)*60))
-    #Update and show time bar
-    clo.set(tempo[0]+":"+tempo[1]+":"+tempo[2])
-
-#Pass of the time
-
-def passtime(Sot):
-    global ms
-    ms+=1
-    if ms >=1000:
-        if(Sot):
-            if(int(tempo[2]) > 0 ):
-                tempo[2] = (str(int(tempo[2]) - 1))
-            elif(int(tempo[1]) > 0):
-                tempo[1] = (str(int(tempo[1]) - 1))
-                tempo[2] = (str(59))
-            elif(int(tempo[0]) > 0):
-                tempo[0] = (str(int(tempo[0]) - 1))
-                tempo[1] = (str(59))
-                tempo[2] = (str(59))
-            update(True)
-            ms = 0
-        else:
-            if(int(tempo[2]) < 59 ):
-                tempo[2] = (str(int(tempo[2]) + 1))
-            elif(int(tempo[1]) < 59):
-                tempo[1] = (str(int(tempo[1]) + 1))
-                tempo[2] = (str(0))
+    def start(self,cot):
+        global run
+        global toc
+        if run == False:
+            run = True
+            toc = cot
+            
+            if cot:
+                self.btnchoro.config(text = "Stop")
+                self.tick(cot)
+            elif cot == False and self.millisecond != 0 or self.second != 0  or self.minute != 0 or self.hour != 0:
+                    self.tick(cot)
+                    self.btntimer.config(text = "Stop")
             else:
-                tempo[0] = (str(int(tempo[0]) + 1))
-                tempo[1] = (str(0))
-                tempo[2] = (str(0))
-            update(False)
-            ms = 0
-
-#Call the same function every millisecond to be exact in the passage of time
-
-def sechan():
-    global aod
-    global run
-    if(run):
-        if(aod):    
-                if(int(tempo[0]) > 0 or int(tempo[1]) > 0 or int(tempo[2]) > 0):
-                    root.after(1,sechan)
-                    passtime(aod)
+                run = False
+        else: 
+            if toc == cot:
+                self.stop()
+                if toc == True:
+                    self.btnchoro.config(text = "Chronometer")
                 else:
+                    self.btntimer.config(text = "Timer")
+            else:
+                self.stop()
+                self.btnchoro.config(text = "Chronometer")
+                self.btntimer.config(text = "Timer")
+
+    #Stop the stopwatch or timer as the case may be
+
+    def stop(self):
+        global run
+        run = False
+
+    #Restart the stopwatch or timer as the case may be
+
+    def reset(self):
+        self.stop()
+        global run
+        run= False
+        self.hour=0
+        self.minute=0
+        self.second=0
+        self.millisecond=0
+        self.text.set("00:00:00:000")
+        self.btnchoro.config(text = "Chronometer")
+        self.btntimer.config(text = "Timer")
+
+    #Call the same function every millisecond to be exact in the passage of time
+
+    def tick(self,cot):
+        if cot:
+            self.passofthetime(cot,"millisecond")
+        else:
+            self.passofthetime(cot,"millisecond")
+        if run:
+            self.root.after(1,lambda:self.tick(cot))
+
+                    
+    def  __init__(self):
+        #Time variables
+        self.hour=0
+        self.minute=0
+        self.second=0
+        self.millisecond=0
+        self.toc = False
+        self.tempo=[self.hour,self.minute,self.second,self.millisecond]
+        #Interface variables
+        self.root=Tk()
+        self.root.title("stopwatch")    
+        self.root.resizable(False,False)
+        self.root.config(bg = "#063956")
+        self.text = StringVar()
+        self.text.set("00:00:00:000")
+        self.myFont =Font(family="Times New Roman", size=18)
+        #
+        self.label = Label(self.root,textvariable=self.text)
+        self.label.grid(row = 0,column = 1)
+        self.label.configure(font=self.myFont, bg = "#063956", fg = "#cb0c59")
+        #----------------1-First column----------------#
+        #Button to decrease one hour
+        self.BHD = Button(self.root,text = "-",command = lambda:self.passofthetime(False,"hour"))
+        self.BHD.grid(row = 1,column = 0)
+        self.BHD.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
+        #Button to decrease one minute
+        self.BMD = Button(self.root,text = "-",command = lambda:self.passofthetime(False,"minute"))
+        self.BMD.grid(row = 2,column = 0)
+        self.BMD.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
+        #Button to decrease one second
+        self.BSD = Button(self.root,text = "-",command = lambda:self.passofthetime(False,"second"))
+        self.BSD.grid(row = 3,column = 0)
+        self.BSD.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
+        #----------------2-Second column----------------#
+        #Hours text box
+        self.HL = Label(self.root,text="Hours",font = 64, bg = "#063956", fg = "#cb0c59")
+        self.HL.grid(row = 1,column = 1)
+        #Minutes text box
+        self.ML = Label(self.root,text="Minutes",font = 64, bg = "#063956", fg = "#cb0c59")
+        self.ML.grid(row = 2,column = 1)
+        #Seconds text box
+        self.SL = Label(self.root,text="Seconds",font = 64, bg = "#063956", fg = "#cb0c59")
+        self.SL.grid(row = 3,column = 1)
+        #----------------3-Third column----------------#
+        #Button to Increase one hour
+        self.BHI = Button(self.root,text = "+",command = lambda:self.passofthetime(True,"hour"))
+        self.BHI.grid(row = 1,column = 2)
+        self.BHI.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
+        #Button to Increase one minute
+        self.BMI = Button(self.root,text = "+",command = lambda:self.passofthetime(True,"minute"))
+        self.BMI.grid(row = 2,column = 2)
+        self.BMI.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
+        #Button to Increase one second
+        self.BSI = Button(self.root,text = "+",command = lambda:self.passofthetime(True,"second"))
+        self.BSI.grid(row = 3,column = 2)
+        self.BSI.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
+        #Reset time
+        self.btnreset = Button(self.root,text="Reset",fg="Blue",command= self.reset)
+        self.btnreset.grid(row = 5,column = 1)
+        self.btnreset.config( bg = "#0c4383", fg = "#cb0c59")
+        #Start to turn back time
+        self.btntimer = Button(self.root, text="Timer" ,fg="Green",command = lambda:self.start(False))
+        self.btntimer.grid(row = 4,column = 0)
+        self.btntimer.config( bg = "#0c4383", fg = "#cb0c59")
+        #Start the passage of time
+        self.btnchoro = Button(self.root,text="Chronometer",fg="red",command = lambda:self.start(True))
+        self.btnchoro.grid(row = 4,column = 2)
+        self.btnchoro.config( bg = "#0c4383", fg = "#cb0c59") 
+
+    #All time control operation
+
+    def passofthetime(self,cot,value):
+        if cot:
+            if value == "millisecond" and run:
+                self.millisecond +=1
+                if(self.millisecond > 999):
+                    self.second += 1 
+                    self.millisecond = 0
+                if(self.second > 59):
+                    self.minute += 1
+                    self.second = 0
+                elif(self.minute > 59):
+                    self.hour += 1
+                    self.minute = 0
+            if value == "second" and run == False:
+                self.second +=1
+                if self.second > 59:
+                    self.minute += 1
+                    self.second = 0
+                if self.minute > 59:
+                    self.hour +=1
+                    self.minute = 0
+            elif value == "minute" and run == False:
+                self.minute +=1
+                if self.minute > 59:
+                    self.hour +=1
+                    self.minute = 0
+            elif value == "hour" and run == False:
+                    self.hour +=1
+        else:
+            if value == "millisecond":
+                if(self.millisecond > 0):
+                    self.millisecond -=1 
+                elif(self.second > 0):
+                    self.second -=1
+                    self.millisecond = 999
+                elif(self.minute > 0):
+                    self.minute -= 1
+                    self.second = 59
+                    self.millisecond = 999
+                elif(self.hour > 0):
+                    self.hour -=1
+                    self.minute = 59
+                    self.second = 59
+                    self.millisecond = 999
+                elif run:
+                    self.stop()
+                    self.btntimer.config(text = "Timer")
                     pygame.init()
                     pygame.mixer.music.load('sound.mp3')
                     pygame.mixer.music.play()
-        else:
-            root.after(1,sechan)
-            passtime(aod)
+            if value == "second" and run == False:
+                if self.second > 0:
+                    self.second -=1
+                elif self.minute > 0:
+                    self.minute -=1
+                    self.second = 59
+                elif self.hour > 0:
+                    self.hour -=1
+                    self.minute = 59
+                    self.second = 59
+            elif value == "minute" and run == False:
+                if self.minute > 0:
+                    self.minute -=1
+                elif self.hour > 0:
+                    self.hour -=1
+                    self.minute = 59
+            elif value == "hour" and self.hour > 0 and run == False:
+                    self.hour -=1
 
-#Start stopwatch or timer as the case may be
-
-def start(SoT):
-    global aod
-    aod = SoT
-    global run
-    if(SoT):
-        if((int(tempo[0]) > 0 or int(tempo[1]) > 0 or int(tempo[2]) > 0) and (run == False)):
-            run = True
-            sechan()
-            BT.config(text = "Stop")
-        elif((int(tempo[0]) > 0 or int(tempo[1]) > 0 or int(tempo[2]) > 0) and (run == True)):
-            run = False
-            BT.config(text = "Timer")
-            BC.config(text = "Chronometer")
-    elif(SoT == False and run == False):
-        run = True
-        sechan()
-        BC.config(text = "Stop")
-    elif(SoT == False and run == True):
-        run = False
-        BC.config(text = "Chronometer")
-        BT.config(text = "Timer")
-   
-#Reset the timer
+        result=self.getvalue(self.hour,False)+":"+self.getvalue(self.minute,False)+":"+self.getvalue(self.second,False)+":"+self.getvalue(self.millisecond,True)
+        self.text.set(result)
         
-def restart():
-    global run
-    run = False
-    tempo[0] = str(int(0))
-    tempo[1] = str(int(0))
-    tempo[2] = str(int(0))
-    clo.set(tempo[0]+":"+tempo[1]+":"+tempo[2])
-    BT.config(text = "Timer")
-    BC.config(text = "Chronometer")
+    #Take values to show a clean time bar
 
-#Interface
+    def getvalue(self,value,zeros):
+        if zeros:
+            if value < 10:
+                return ("00" + str(value))
+            elif value < 100 and value >= 10:
+                return ("0" + str(value))
+            else:
+                return str(value)
+        if zeros == False:
+            if value <10:
+                return ("0" + str(value))
+            else:
+                return str(value)
 
-#Root
-root = Tk()
-root.title("Timer and Chronometer")
-root.resizable(False,False)
-root.geometry("400x300")
-root.config(bg = "#063956")
-
-#Frame
-frame = Frame(root,width = 500,height = 400)
-frame.pack()
-frame.config(bg = "#063956")
-
-#Time variables
-tempo=['0','0','0']
-ms = 0
-clo=StringVar()
-clo.set(tempo[0]+":"+tempo[1]+":"+tempo[2])
-
-#Timer bar
-clock = Label(frame, textvariable = clo)
-clock.grid(row = 0,column = 0,columnspan = 4)
-clock.config(font = 64, bg = "#063956", fg = "#cb0c59")
-
-#Controlling variables
-run = False
-aod = False
-
-#----------------1-First column----------------#
-
-#Button to decrease one hour
-BHD = Button(frame,text = "-", command = lambda:Mohours(True))
-BHD.grid(row = 1,column = 0)
-BHD.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
-#Button to decrease one minute
-BMD = Button(frame,text = "-", command = lambda:Mominutes(True))
-BMD.grid(row = 2,column = 0)
-BMD.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
-#Button to decrease one second
-BSD = Button(frame,text = "-", command = lambda:Moseconds(True))
-BSD.grid(row = 3,column = 0)
-BSD.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
-#Start the passage of time
-BT = Button(frame,text = "Timer", command = lambda:start(True), padx = 30)
-BT.grid(row = 4,column = 0,columnspan = 2)
-BT.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
-
-#----------------2-Second column----------------#
-
-#Seconds text box
-HL = Label(frame, text = 'Hours')
-HL.grid(row = 1,column = 1,columnspan = 2)
-HL.config(font = 64, bg = "#063956", fg = "#cb0c59")
-#Minutes text box
-ML = Label(frame, text = 'Minutes')
-ML.grid(row = 2,column = 1,columnspan = 2)
-ML.config(font = 64, bg = "#063956", fg = "#cb0c59")
-#Hours text box
-SL = Label(frame, text = 'Seconds')
-SL.grid(row = 3,column = 1,columnspan = 2)
-SL.config(font = 64, bg = "#063956", fg = "#cb0c59")
-#Reset time
-BR = Button(frame,text = "Restart", command = restart, padx = 30)
-BR.grid(row = 5,column = 1,columnspan = 2)
-BR.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
-#Start to turn back time
-BC = Button(frame,text = "Chronometer", command = lambda:start(False), padx = 30)
-BC.grid(row = 4,column = 2,columnspan = 2)
-BC.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
-
-#----------------3-Third column----------------#
-#Button to Increase one hour
-BHI = Button(frame,text = "+", command = lambda:Mohours(False))
-BHI.grid(row = 1,column = 3)
-BHI.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
-#Button to Increase one minute
-BMI = Button(frame,text = "+", command = lambda:Mominutes(False))
-BMI.grid(row = 2,column = 3)
-BMI.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
-#Button to Increase one second
-BSI = Button(frame,text = "+", command = lambda:Moseconds(False))
-BSI.grid(row = 3,column = 3)
-BSI.config(font = 64, bg = "#0c4383", fg = "#cb0c59")
-
-#Stop Timer and Terminate Root
-
-root.mainloop()
+App=interface()
+App.root.mainloop()
